@@ -230,8 +230,8 @@
         }
 
         .service-tile:focus {
-            border-color: #fff;
-            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.6);
+            border-color: #667eea;
+            box-shadow: 0 0 0 5px rgba(102, 126, 234, 0.8), 0 15px 40px rgba(102, 126, 234, 0.5);
         }
 
         .service-logo {
@@ -240,6 +240,12 @@
             object-fit: cover;
             filter: brightness(1.1);
             transition: all 0.3s ease;
+        }
+
+        .service-tile:hover .service-logo,
+        .service-tile:focus .service-logo {
+            transform: scale(1.05);
+            filter: brightness(1.3);
         }
 
         .service-tile:hover .service-logo {
