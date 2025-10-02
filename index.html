@@ -220,11 +220,18 @@
             overflow: hidden;
         }
 
-        .service-tile:hover {
+        .service-tile:hover,
+        .service-tile:focus {
             transform: translateY(-8px) scale(1.03);
             background: rgba(0, 0, 0, 0.6);
             border-color: #667eea;
             box-shadow: 0 15px 40px rgba(102, 126, 234, 0.5);
+            outline: none;
+        }
+
+        .service-tile:focus {
+            border-color: #fff;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.6);
         }
 
         .service-logo {
@@ -453,16 +460,66 @@
         // Initialize carousel
         initCarousel();
 
+        // D-Pad / Arrow Key Navigation
+        const tiles = document.querySelectorAll('.service-tile');
+        let currentTileIndex = 0;
+        const tilesPerRow = 4;
+
+        // Focus first tile on load
+        if (tiles.length > 0) {
+            tiles[0].focus();
+        }
+
         // Keyboard navigation (for remote control)
         document.addEventListener('keydown', (e) => {
+            // F11 for fullscreen
             if (e.key === 'F11') {
-                // F11 toggles fullscreen
+                e.preventDefault();
                 if (!document.fullscreenElement) {
                     document.documentElement.requestFullscreen();
                 } else {
                     document.exitFullscreen();
                 }
+                return;
             }
+
+            // Arrow key navigation
+            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Enter'].includes(e.key)) {
+                e.preventDefault();
+
+                const totalTiles = tiles.length;
+
+                switch(e.key) {
+                    case 'ArrowRight':
+                        currentTileIndex = (currentTileIndex + 1) % totalTiles;
+                        break;
+                    case 'ArrowLeft':
+                        currentTileIndex = (currentTileIndex - 1 + totalTiles) % totalTiles;
+                        break;
+                    case 'ArrowDown':
+                        // Move down one row (add 4)
+                        currentTileIndex = (currentTileIndex + tilesPerRow) % totalTiles;
+                        break;
+                    case 'ArrowUp':
+                        // Move up one row (subtract 4)
+                        currentTileIndex = (currentTileIndex - tilesPerRow + totalTiles) % totalTiles;
+                        break;
+                    case 'Enter':
+                        // Activate the currently focused tile
+                        tiles[currentTileIndex].click();
+                        return;
+                }
+
+                // Focus the new tile
+                tiles[currentTileIndex].focus();
+            }
+        });
+
+        // Also support Tab navigation
+        tiles.forEach((tile, index) => {
+            tile.addEventListener('focus', () => {
+                currentTileIndex = index;
+            });
         });
     </script>
 </body>
