@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Streaming Hub</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            color: #fff;
+            overflow-x: hidden;
+            cursor: default;
+        }
+
+        .container {
+            max-width: 1920px;
+            margin: 0 auto;
+            padding: 40px;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            padding: 0 20px;
+        }
+
+        .logo {
+            font-size: 2.5rem;
+            font-weight: bold;
+            background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .time-date {
+            text-align: right;
+            font-size: 1.2rem;
+            opacity: 0.8;
+        }
+
+        /* Featured Banner Carousel */
+        .featured-section {
+            margin-bottom: 50px;
+        }
+
+        .featured-carousel {
+            position: relative;
+            height: 500px;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .carousel-slides {
+            height: 100%;
+            position: relative;
+        }
+
+        .carousel-slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .carousel-slide.active {
+            opacity: 1;
+        }
+
+        .carousel-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.6) 50%, transparent 100%);
+            padding: 60px;
+            color: white;
+        }
+
+        .carousel-overlay h2 {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.8);
+        }
+
+        .carousel-overlay p {
+            font-size: 1.3rem;
+            opacity: 0.95;
+            max-width: 800px;
+            text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.8);
+        }
+
+        .carousel-overlay .badge {
+            display: inline-block;
+            background: rgba(102, 126, 234, 0.9);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .carousel-dots {
+            position: absolute;
+            bottom: 30px;
+            right: 60px;
+            display: flex;
+            gap: 10px;
+            z-index: 10;
+        }
+
+        .carousel-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.4);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .carousel-dot.active {
+            background: #667eea;
+            width: 30px;
+            border-radius: 6px;
+        }
+
+        .carousel-arrows {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 20px;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .carousel-arrow {
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            cursor: pointer;
+            pointer-events: all;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .carousel-arrow:hover {
+            background: rgba(102, 126, 234, 0.8);
+            transform: scale(1.1);
+        }
+
+        /* Section Headers */
+        .section {
+            margin-bottom: 50px;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            margin-bottom: 25px;
+            padding-left: 20px;
+            border-left: 5px solid #667eea;
+        }
+
+        /* Streaming Services Grid */
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 25px;
+            margin-bottom: 50px;
+        }
+
+        .service-tile {
+            aspect-ratio: 16 / 9;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            text-decoration: none;
+            color: white;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .service-tile:hover {
+            transform: translateY(-8px) scale(1.03);
+            background: rgba(0, 0, 0, 0.6);
+            border-color: #667eea;
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.5);
+        }
+
+        .service-logo {
+            max-width: 80%;
+            max-height: 80%;
+            object-fit: contain;
+            filter: brightness(1.1);
+            transition: all 0.3s ease;
+        }
+
+        .service-tile:hover .service-logo {
+            transform: scale(1.1);
+            filter: brightness(1.3);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 1400px) {
+            .services-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 1000px) {
+            .services-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 40px;
+            opacity: 0.5;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">🎬 My Streaming Hub</div>
+            <div class="time-date" id="timeDate"></div>
+        </div>
+
+        <!-- Featured Banner Carousel -->
+        <div class="featured-section">
+            <div class="featured-carousel">
+                <div class="carousel-slides" id="carouselSlides">
+                    <!-- Slides will be dynamically loaded -->
+                </div>
+                <div class="carousel-arrows">
+                    <button class="carousel-arrow" onclick="changeSlide(-1)">❮</button>
+                    <button class="carousel-arrow" onclick="changeSlide(1)">❯</button>
+                </div>
+                <div class="carousel-dots" id="carouselDots"></div>
+            </div>
+        </div>
+
+        <!-- Streaming Services -->
+        <div class="section">
+            <h2 class="section-title">Streaming Services</h2>
+            <div class="services-grid">
+                <a href="https://www.netflix.com" class="service-tile" target="_blank">
+                    <img src="images/netflix.png" alt="Netflix" class="service-logo">
+                </a>
+                <a href="https://www.disneyplus.com" class="service-tile" target="_blank">
+                    <img src="images/disney.png" alt="Disney+" class="service-logo">
+                </a>
+                <a href="https://www.hulu.com" class="service-tile" target="_blank">
+                    <img src="images/hulu.png" alt="Hulu" class="service-logo">
+                </a>
+                <a href="https://www.youtube.com" class="service-tile" target="_blank">
+                    <img src="images/youtube.png" alt="YouTube" class="service-logo">
+                </a>
+                <a href="https://www.peacocktv.com" class="service-tile" target="_blank">
+                    <img src="images/peacock.png" alt="Peacock" class="service-logo">
+                </a>
+                <a href="https://www.paramountplus.com" class="service-tile" target="_blank">
+                    <img src="images/paramount.png" alt="Paramount+" class="service-logo">
+                </a>
+                <a href="https://tv.apple.com" class="service-tile" target="_blank">
+                    <img src="images/appletv.png" alt="Apple TV+" class="service-logo">
+                </a>
+                <a href="https://www.max.com" class="service-tile" target="_blank">
+                    <img src="images/max.png" alt="Max" class="service-logo">
+                </a>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            Press F11 for fullscreen | Last updated: <span id="lastUpdate"></span>
+        </div>
+    </div>
+
+    <script>
+        // Update time and date
+        function updateTime() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('en-US', { 
+                hour: 'numeric', 
+                minute: '2-digit',
+                hour12: true 
+            });
+            const dateStr = now.toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+            document.getElementById('timeDate').innerHTML = `${timeStr}<br>${dateStr}`;
+            document.getElementById('lastUpdate').textContent = timeStr;
+        }
+        updateTime();
+        setInterval(updateTime, 60000);
+
+        // Carousel functionality
+        let currentSlide = 0;
+        let carouselSlides = [];
+        let autoPlayInterval;
+
+        // Featured content for carousel (you can customize these!)
+        const featuredContent = [
+            {
+                image: 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=1920&h=500&fit=crop',
+                title: 'New Releases This Week',
+                description: 'Discover the latest movies and shows across all your streaming services',
+                badge: 'Trending Now'
+            },
+            {
+                image: 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=1920&h=500&fit=crop',
+                title: 'Binge-Worthy Series',
+                description: 'Top-rated shows everyone is talking about',
+                badge: 'Must Watch'
+            },
+            {
+                image: 'https://images.unsplash.com/photo-1574267432644-f74f8ec55944?w=1920&h=500&fit=crop',
+                title: 'Movie Night Picks',
+                description: 'Perfect films for your weekend entertainment',
+                badge: 'Staff Picks'
+            },
+            {
+                image: 'https://images.unsplash.com/photo-1598899134739-24c46f58b8c0?w=1920&h=500&fit=crop',
+                title: 'Family Favorites',
+                description: 'Great content for the whole family to enjoy together',
+                badge: 'Family Friendly'
+            },
+            {
+                image: 'https://images.unsplash.com/photo-1485846234645-a62644f84728?w=1920&h=500&fit=crop',
+                title: 'Award Winners',
+                description: 'Critically acclaimed films and series',
+                badge: 'Award Season'
+            }
+        ];
+
+        function initCarousel() {
+            const slidesContainer = document.getElementById('carouselSlides');
+            const dotsContainer = document.getElementById('carouselDots');
+            
+            // Create slides
+            featuredContent.forEach((content, index) => {
+                const slide = document.createElement('div');
+                slide.className = `carousel-slide ${index === 0 ? 'active' : ''}`;
+                slide.style.backgroundImage = `url('${content.image}')`;
+                slide.innerHTML = `
+                    <div class="carousel-overlay">
+                        <div class="badge">${content.badge}</div>
+                        <h2>${content.title}</h2>
+                        <p>${content.description}</p>
+                    </div>
+                `;
+                slidesContainer.appendChild(slide);
+                
+                // Create dot
+                const dot = document.createElement('div');
+                dot.className = `carousel-dot ${index === 0 ? 'active' : ''}`;
+                dot.onclick = () => goToSlide(index);
+                dotsContainer.appendChild(dot);
+            });
+            
+            carouselSlides = document.querySelectorAll('.carousel-slide');
+            startAutoPlay();
+        }
+
+        function changeSlide(direction) {
+            const slides = document.querySelectorAll('.carousel-slide');
+            const dots = document.querySelectorAll('.carousel-dot');
+            
+            slides[currentSlide].classList.remove('active');
+            dots[currentSlide].classList.remove('active');
+            
+            currentSlide = (currentSlide + direction + slides.length) % slides.length;
+            
+            slides[currentSlide].classList.add('active');
+            dots[currentSlide].classList.add('active');
+            
+            resetAutoPlay();
+        }
+
+        function goToSlide(index) {
+            const slides = document.querySelectorAll('.carousel-slide');
+            const dots = document.querySelectorAll('.carousel-dot');
+            
+            slides[currentSlide].classList.remove('active');
+            dots[currentSlide].classList.remove('active');
+            
+            currentSlide = index;
+            
+            slides[currentSlide].classList.add('active');
+            dots[currentSlide].classList.add('active');
+            
+            resetAutoPlay();
+        }
+
+        function startAutoPlay() {
+            autoPlayInterval = setInterval(() => {
+                changeSlide(1);
+            }, 5000); // Change slide every 5 seconds
+        }
+
+        function resetAutoPlay() {
+            clearInterval(autoPlayInterval);
+            startAutoPlay();
+        }
+
+        // Initialize carousel
+        initCarousel();
+
+        // Keyboard navigation (for remote control)
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'F11') {
+                // F11 toggles fullscreen
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen();
+                } else {
+                    document.exitFullscreen();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
